@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any, Iterator, Optional
 
 from .config import ClientConfig
 from .decoder import Records, decode_columnar, decode_columnar_page, snake_to_camel
@@ -99,8 +99,59 @@ class StockDataClient:
     def _call_all(
         self, ep: Endpoint, *, max_rows: int, page_size: int, **biz: Any
     ) -> Records:
-        # Task 7 实现
-        raise NotImplementedError  # pragma: no cover
+        rows: list = []
+        page_num = 1
+        total_count: Optional[int] = None
+        total_pages: Optional[int] = None
+        while True:
+            page = self._call_page(ep, page_num=page_num, page_size=page_size, **biz)
+            rows.extend(page)
+            total_count = page.total_count
+            total_pages = page.total_pages
+            if len(rows) > max_rows:
+                raise PaginationLimitError(
+                    f"'{ep.name}' 结果已达 {len(rows)} 行，超过 max_rows={max_rows}；"
+                    f"请缩小查询范围或显式调高 max_rows"
+                )
+            if total_pages is not None and page_num >= total_pages:
+                break
+            if len(page) == 0:  # 兜底：空页即止
+                break
+            page_num += 1
+        return Records(
+            rows,
+            total_count=total_count,
+            total_pages=total_pages,
+            page_num=1,
+            page_size=len(rows),
+        )
+
+    def _iter_pages(
+        self,
+        name: str,
+        *,
+        max_rows: int = DEFAULT_MAX_ROWS,
+        page_size: int = DEFAULT_PAGE_SIZE,
+        **biz: Any,
+    ) -> Iterator[Records]:
+        ep = self._by_name[name]
+        self._validate(ep, biz, page_size=page_size)
+        page_num = 1
+        seen = 0
+        while True:
+            page = self._call_page(ep, page_num=page_num, page_size=page_size, **biz)
+            if len(page) == 0:
+                break
+            yield page
+            seen += len(page)
+            if seen > max_rows:
+                raise PaginationLimitError(
+                    f"'{ep.name}' 已迭代 {seen} 行，超过 max_rows={max_rows}；"
+                    f"请缩小查询范围或显式调高 max_rows"
+                )
+            if page.total_pages is not None and page_num >= page.total_pages:
+                break
+            page_num += 1
 
     # ---------------- 公开 API：26 个方法 ----------------
     def kline_daily(
@@ -356,3 +407,130 @@ class StockDataClient:
     def stock_realtime(self, *, stock_codes=None) -> Records:
         """股票实时快照（内存，不分页）。POST /stock-realtime/list。stock_codes 为空返回全部。"""
         return self._call("stock_realtime", stock_codes=stock_codes)
+
+    # ---------------- 流式迭代（仅分页接口）----------------
+    def kline_daily_iter(self, *, stock_code=None, start_date=None, end_date=None,
+                         page_size=DEFAULT_PAGE_SIZE, max_rows=DEFAULT_MAX_ROWS) -> Iterator[Records]:
+        """日K线行情，逐页 yield Records（流式，适合大数据集）。"""
+        yield from self._iter_pages("kline_daily", max_rows=max_rows, page_size=page_size,
+                                    stock_code=stock_code, start_date=start_date, end_date=end_date)
+
+    def kline_daily_stat_iter(self, *, stock_code=None, start_date=None, end_date=None,
+                              page_size=DEFAULT_PAGE_SIZE, max_rows=DEFAULT_MAX_ROWS) -> Iterator[Records]:
+        """每日统计指标，逐页 yield。"""
+        yield from self._iter_pages("kline_daily_stat", max_rows=max_rows, page_size=page_size,
+                                    stock_code=stock_code, start_date=start_date, end_date=end_date)
+
+    def kline_minute_snapshot_iter(self, *, stock_code=None,
+                                   page_size=DEFAULT_PAGE_SIZE, max_rows=DEFAULT_MAX_ROWS) -> Iterator[Records]:
+        """分钟K线快照，逐页 yield。"""
+        yield from self._iter_pages("kline_minute_snapshot", max_rows=max_rows,
+                                    page_size=page_size, stock_code=stock_code)
+
+    def index_kline_daily_iter(self, *, index_code=None, start_date=None, end_date=None,
+                               page_size=DEFAULT_PAGE_SIZE, max_rows=DEFAULT_MAX_ROWS) -> Iterator[Records]:
+        """指数日K线，逐页 yield。"""
+        yield from self._iter_pages("index_kline_daily", max_rows=max_rows, page_size=page_size,
+                                    index_code=index_code, start_date=start_date, end_date=end_date)
+
+    def index_constituent_iter(self, *, index_code=None, stock_code=None,
+                               page_size=DEFAULT_PAGE_SIZE, max_rows=DEFAULT_MAX_ROWS) -> Iterator[Records]:
+        """指数成分股，逐页 yield。"""
+        yield from self._iter_pages("index_constituent", max_rows=max_rows, page_size=page_size,
+                                    index_code=index_code, stock_code=stock_code)
+
+    def sw_stock_classify_iter(self, *, stock_code=None,
+                               page_size=DEFAULT_PAGE_SIZE, max_rows=DEFAULT_MAX_ROWS) -> Iterator[Records]:
+        """个股申万行业归属，逐页 yield。"""
+        yield from self._iter_pages("sw_stock_classify", max_rows=max_rows,
+                                    page_size=page_size, stock_code=stock_code)
+
+    def sw_industry_daily_stat_iter(self, *, industry_code=None, start_date=None, end_date=None,
+                                    page_size=DEFAULT_PAGE_SIZE, max_rows=DEFAULT_MAX_ROWS) -> Iterator[Records]:
+        """申万行业日度统计，逐页 yield。"""
+        yield from self._iter_pages("sw_industry_daily_stat", max_rows=max_rows, page_size=page_size,
+                                    industry_code=industry_code, start_date=start_date, end_date=end_date)
+
+    def sw_industry_capital_flow_iter(self, *, industry_code=None, start_date=None, end_date=None,
+                                      page_size=DEFAULT_PAGE_SIZE, max_rows=DEFAULT_MAX_ROWS) -> Iterator[Records]:
+        """申万行业资金流，逐页 yield。"""
+        yield from self._iter_pages("sw_industry_capital_flow", max_rows=max_rows, page_size=page_size,
+                                    industry_code=industry_code, start_date=start_date, end_date=end_date)
+
+    def capital_flow_iter(self, *, stock_code=None, start_date=None, end_date=None,
+                          page_size=DEFAULT_PAGE_SIZE, max_rows=DEFAULT_MAX_ROWS) -> Iterator[Records]:
+        """资金流向，逐页 yield。"""
+        yield from self._iter_pages("capital_flow", max_rows=max_rows, page_size=page_size,
+                                    stock_code=stock_code, start_date=start_date, end_date=end_date)
+
+    def block_trade_iter(self, *, stock_code=None, start_date=None, end_date=None,
+                         page_size=DEFAULT_PAGE_SIZE, max_rows=DEFAULT_MAX_ROWS) -> Iterator[Records]:
+        """大宗交易，逐页 yield。"""
+        yield from self._iter_pages("block_trade", max_rows=max_rows, page_size=page_size,
+                                    stock_code=stock_code, start_date=start_date, end_date=end_date)
+
+    def margin_trading_iter(self, *, stock_code=None, start_date=None, end_date=None,
+                            page_size=DEFAULT_PAGE_SIZE, max_rows=DEFAULT_MAX_ROWS) -> Iterator[Records]:
+        """融资融券，逐页 yield。"""
+        yield from self._iter_pages("margin_trading", max_rows=max_rows, page_size=page_size,
+                                    stock_code=stock_code, start_date=start_date, end_date=end_date)
+
+    def dragon_tiger_iter(self, *, stock_code=None, start_date=None, end_date=None,
+                          page_size=DEFAULT_PAGE_SIZE, max_rows=DEFAULT_MAX_ROWS) -> Iterator[Records]:
+        """龙虎榜，逐页 yield。"""
+        yield from self._iter_pages("dragon_tiger", max_rows=max_rows, page_size=page_size,
+                                    stock_code=stock_code, start_date=start_date, end_date=end_date)
+
+    def pre_post_market_iter(self, *, stock_code=None, start_date=None, end_date=None,
+                             page_size=DEFAULT_PAGE_SIZE, max_rows=DEFAULT_MAX_ROWS) -> Iterator[Records]:
+        """盘前盘后成交，逐页 yield。"""
+        yield from self._iter_pages("pre_post_market", max_rows=max_rows, page_size=page_size,
+                                    stock_code=stock_code, start_date=start_date, end_date=end_date)
+
+    def share_capital_iter(self, *, stock_code=None, start_date=None, end_date=None,
+                           page_size=DEFAULT_PAGE_SIZE, max_rows=DEFAULT_MAX_ROWS) -> Iterator[Records]:
+        """股本数据，逐页 yield。"""
+        yield from self._iter_pages("share_capital", max_rows=max_rows, page_size=page_size,
+                                    stock_code=stock_code, start_date=start_date, end_date=end_date)
+
+    def share_trade_iter(self, *, stock_code=None, start_date=None, end_date=None,
+                         page_size=DEFAULT_PAGE_SIZE, max_rows=DEFAULT_MAX_ROWS) -> Iterator[Records]:
+        """增减持，逐页 yield。"""
+        yield from self._iter_pages("share_trade", max_rows=max_rows, page_size=page_size,
+                                    stock_code=stock_code, start_date=start_date, end_date=end_date)
+
+    def shareholder_stats_iter(self, *, stock_code=None, report_year=None, quarter_type=None,
+                               page_size=DEFAULT_PAGE_SIZE, max_rows=DEFAULT_MAX_ROWS) -> Iterator[Records]:
+        """股东统计，逐页 yield。quarter_type: 1~4。"""
+        yield from self._iter_pages("shareholder_stats", max_rows=max_rows, page_size=page_size,
+                                    stock_code=stock_code, report_year=report_year, quarter_type=quarter_type)
+
+    def institutional_holding_iter(self, *, stock_code=None, report_year=None, quarter_type=None,
+                                   page_size=DEFAULT_PAGE_SIZE, max_rows=DEFAULT_MAX_ROWS) -> Iterator[Records]:
+        """机构持股，逐页 yield。quarter_type: 1~4。"""
+        yield from self._iter_pages("institutional_holding", max_rows=max_rows, page_size=page_size,
+                                    stock_code=stock_code, report_year=report_year, quarter_type=quarter_type)
+
+    def financial_report_iter(self, *, stock_code=None, report_year=None, quarter_type=None,
+                              page_size=DEFAULT_PAGE_SIZE, max_rows=DEFAULT_MAX_ROWS) -> Iterator[Records]:
+        """财务报告，逐页 yield。quarter_type: 1~4。"""
+        yield from self._iter_pages("financial_report", max_rows=max_rows, page_size=page_size,
+                                    stock_code=stock_code, report_year=report_year, quarter_type=quarter_type)
+
+    def dividend_factor_iter(self, *, stock_code=None, start_date=None, end_date=None,
+                             page_size=DEFAULT_PAGE_SIZE, max_rows=DEFAULT_MAX_ROWS) -> Iterator[Records]:
+        """分红配送，逐页 yield。"""
+        yield from self._iter_pages("dividend_factor", max_rows=max_rows, page_size=page_size,
+                                    stock_code=stock_code, start_date=start_date, end_date=end_date)
+
+    def stock_limit_up_stats_iter(self, *, stock_code=None, start_date=None, end_date=None,
+                                  page_size=DEFAULT_PAGE_SIZE, max_rows=DEFAULT_MAX_ROWS) -> Iterator[Records]:
+        """涨跌停统计，逐页 yield。"""
+        yield from self._iter_pages("stock_limit_up_stats", max_rows=max_rows, page_size=page_size,
+                                    stock_code=stock_code, start_date=start_date, end_date=end_date)
+
+    def trading_calendar_iter(self, *, start_date=None, end_date=None,
+                              page_size=DEFAULT_PAGE_SIZE, max_rows=DEFAULT_MAX_ROWS) -> Iterator[Records]:
+        """交易日历，逐页 yield。"""
+        yield from self._iter_pages("trading_calendar", max_rows=max_rows, page_size=page_size,
+                                    start_date=start_date, end_date=end_date)
