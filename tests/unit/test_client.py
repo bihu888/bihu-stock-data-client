@@ -75,7 +75,7 @@ def test_stock_realtime_post_body():
 
 
 def test_unknown_param_rejected():
-    with pytest.raises(ValidationError):
+    with pytest.raises(TypeError):
         client().kline_daily(foo="bar")
 
 

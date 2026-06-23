@@ -106,7 +106,6 @@ class StockDataClient:
     def kline_daily(
         self, *, stock_code=None, start_date=None, end_date=None,
         page_num=1, page_size=DEFAULT_PAGE_SIZE, fetch_all=False, max_rows=DEFAULT_MAX_ROWS,
-        **extra,
     ) -> Records:
         """日K线行情。POST /kline-daily/list（分页）。
 
@@ -118,20 +117,17 @@ class StockDataClient:
             "kline_daily", fetch_all=fetch_all, max_rows=max_rows,
             page_num=page_num, page_size=page_size,
             stock_code=stock_code, start_date=start_date, end_date=end_date,
-            **extra,
         )
 
     def kline_daily_stat(
         self, *, stock_code=None, start_date=None, end_date=None,
         page_num=1, page_size=DEFAULT_PAGE_SIZE, fetch_all=False, max_rows=DEFAULT_MAX_ROWS,
-        **extra,
     ) -> Records:
         """每日统计指标。POST /kline-daily-stat/list（分页）。"""
         return self._call(
             "kline_daily_stat", fetch_all=fetch_all, max_rows=max_rows,
             page_num=page_num, page_size=page_size,
             stock_code=stock_code, start_date=start_date, end_date=end_date,
-            **extra,
         )
 
     def kline_minute(self, *, stock_code, trade_date) -> Records:
@@ -141,13 +137,11 @@ class StockDataClient:
     def kline_minute_snapshot(
         self, *, stock_code=None,
         page_num=1, page_size=DEFAULT_PAGE_SIZE, fetch_all=False, max_rows=DEFAULT_MAX_ROWS,
-        **extra,
     ) -> Records:
         """分钟K线快照。POST /kline-minute-snapshot/list（分页）。"""
         return self._call(
             "kline_minute_snapshot", fetch_all=fetch_all, max_rows=max_rows,
             page_num=page_num, page_size=page_size, stock_code=stock_code,
-            **extra,
         )
 
     def index_basic(self) -> Records:
@@ -157,27 +151,23 @@ class StockDataClient:
     def index_kline_daily(
         self, *, index_code=None, start_date=None, end_date=None,
         page_num=1, page_size=DEFAULT_PAGE_SIZE, fetch_all=False, max_rows=DEFAULT_MAX_ROWS,
-        **extra,
     ) -> Records:
         """指数日K线。POST /index-kline-daily/list（分页）。"""
         return self._call(
             "index_kline_daily", fetch_all=fetch_all, max_rows=max_rows,
             page_num=page_num, page_size=page_size,
             index_code=index_code, start_date=start_date, end_date=end_date,
-            **extra,
         )
 
     def index_constituent(
         self, *, index_code=None, stock_code=None,
         page_num=1, page_size=DEFAULT_PAGE_SIZE, fetch_all=False, max_rows=DEFAULT_MAX_ROWS,
-        **extra,
     ) -> Records:
         """指数成分股。POST /index-constituent/list（分页）。"""
         return self._call(
             "index_constituent", fetch_all=fetch_all, max_rows=max_rows,
             page_num=page_num, page_size=page_size,
             index_code=index_code, stock_code=stock_code,
-            **extra,
         )
 
     def stock_basic(self) -> Records:
@@ -191,208 +181,176 @@ class StockDataClient:
     def sw_stock_classify(
         self, *, stock_code=None,
         page_num=1, page_size=DEFAULT_PAGE_SIZE, fetch_all=False, max_rows=DEFAULT_MAX_ROWS,
-        **extra,
     ) -> Records:
         """个股申万行业归属。POST /sw-stock-classify/list（分页）。"""
         return self._call(
             "sw_stock_classify", fetch_all=fetch_all, max_rows=max_rows,
             page_num=page_num, page_size=page_size, stock_code=stock_code,
-            **extra,
         )
 
     def sw_industry_daily_stat(
         self, *, industry_code=None, start_date=None, end_date=None,
         page_num=1, page_size=DEFAULT_PAGE_SIZE, fetch_all=False, max_rows=DEFAULT_MAX_ROWS,
-        **extra,
     ) -> Records:
         """申万行业日度统计。POST /sw-industry-daily-stat/list（分页）。"""
         return self._call(
             "sw_industry_daily_stat", fetch_all=fetch_all, max_rows=max_rows,
             page_num=page_num, page_size=page_size,
             industry_code=industry_code, start_date=start_date, end_date=end_date,
-            **extra,
         )
 
     def sw_industry_capital_flow(
         self, *, industry_code=None, start_date=None, end_date=None,
         page_num=1, page_size=DEFAULT_PAGE_SIZE, fetch_all=False, max_rows=DEFAULT_MAX_ROWS,
-        **extra,
     ) -> Records:
         """申万行业资金流。POST /sw-industry-capital-flow/list（分页）。"""
         return self._call(
             "sw_industry_capital_flow", fetch_all=fetch_all, max_rows=max_rows,
             page_num=page_num, page_size=page_size,
             industry_code=industry_code, start_date=start_date, end_date=end_date,
-            **extra,
         )
 
     def capital_flow(
         self, *, stock_code=None, start_date=None, end_date=None,
         page_num=1, page_size=DEFAULT_PAGE_SIZE, fetch_all=False, max_rows=DEFAULT_MAX_ROWS,
-        **extra,
     ) -> Records:
         """资金流向。POST /capital-flow/list（分页）。"""
         return self._call(
             "capital_flow", fetch_all=fetch_all, max_rows=max_rows,
             page_num=page_num, page_size=page_size,
             stock_code=stock_code, start_date=start_date, end_date=end_date,
-            **extra,
         )
 
     def block_trade(
         self, *, stock_code=None, start_date=None, end_date=None,
         page_num=1, page_size=DEFAULT_PAGE_SIZE, fetch_all=False, max_rows=DEFAULT_MAX_ROWS,
-        **extra,
     ) -> Records:
         """大宗交易。POST /block-trade/list（分页）。"""
         return self._call(
             "block_trade", fetch_all=fetch_all, max_rows=max_rows,
             page_num=page_num, page_size=page_size,
             stock_code=stock_code, start_date=start_date, end_date=end_date,
-            **extra,
         )
 
     def margin_trading(
         self, *, stock_code=None, start_date=None, end_date=None,
         page_num=1, page_size=DEFAULT_PAGE_SIZE, fetch_all=False, max_rows=DEFAULT_MAX_ROWS,
-        **extra,
     ) -> Records:
         """融资融券。POST /margin-trading/list（分页）。"""
         return self._call(
             "margin_trading", fetch_all=fetch_all, max_rows=max_rows,
             page_num=page_num, page_size=page_size,
             stock_code=stock_code, start_date=start_date, end_date=end_date,
-            **extra,
         )
 
     def dragon_tiger(
         self, *, stock_code=None, start_date=None, end_date=None,
         page_num=1, page_size=DEFAULT_PAGE_SIZE, fetch_all=False, max_rows=DEFAULT_MAX_ROWS,
-        **extra,
     ) -> Records:
         """龙虎榜。POST /dragon-tiger/list（分页）。"""
         return self._call(
             "dragon_tiger", fetch_all=fetch_all, max_rows=max_rows,
             page_num=page_num, page_size=page_size,
             stock_code=stock_code, start_date=start_date, end_date=end_date,
-            **extra,
         )
 
     def pre_post_market(
         self, *, stock_code=None, start_date=None, end_date=None,
         page_num=1, page_size=DEFAULT_PAGE_SIZE, fetch_all=False, max_rows=DEFAULT_MAX_ROWS,
-        **extra,
     ) -> Records:
         """盘前盘后成交。POST /pre-post-market/list（分页）。"""
         return self._call(
             "pre_post_market", fetch_all=fetch_all, max_rows=max_rows,
             page_num=page_num, page_size=page_size,
             stock_code=stock_code, start_date=start_date, end_date=end_date,
-            **extra,
         )
 
     def share_capital(
         self, *, stock_code=None, start_date=None, end_date=None,
         page_num=1, page_size=DEFAULT_PAGE_SIZE, fetch_all=False, max_rows=DEFAULT_MAX_ROWS,
-        **extra,
     ) -> Records:
         """股本数据。POST /share-capital/list（分页）。"""
         return self._call(
             "share_capital", fetch_all=fetch_all, max_rows=max_rows,
             page_num=page_num, page_size=page_size,
             stock_code=stock_code, start_date=start_date, end_date=end_date,
-            **extra,
         )
 
     def share_trade(
         self, *, stock_code=None, start_date=None, end_date=None,
         page_num=1, page_size=DEFAULT_PAGE_SIZE, fetch_all=False, max_rows=DEFAULT_MAX_ROWS,
-        **extra,
     ) -> Records:
         """增减持。POST /share-trade/list（分页）。"""
         return self._call(
             "share_trade", fetch_all=fetch_all, max_rows=max_rows,
             page_num=page_num, page_size=page_size,
             stock_code=stock_code, start_date=start_date, end_date=end_date,
-            **extra,
         )
 
     def shareholder_stats(
         self, *, stock_code=None, report_year=None, quarter_type=None,
         page_num=1, page_size=DEFAULT_PAGE_SIZE, fetch_all=False, max_rows=DEFAULT_MAX_ROWS,
-        **extra,
     ) -> Records:
         """股东统计。POST /shareholder-stats/list（分页）。quarter_type: 1~4。"""
         return self._call(
             "shareholder_stats", fetch_all=fetch_all, max_rows=max_rows,
             page_num=page_num, page_size=page_size,
             stock_code=stock_code, report_year=report_year, quarter_type=quarter_type,
-            **extra,
         )
 
     def institutional_holding(
         self, *, stock_code=None, report_year=None, quarter_type=None,
         page_num=1, page_size=DEFAULT_PAGE_SIZE, fetch_all=False, max_rows=DEFAULT_MAX_ROWS,
-        **extra,
     ) -> Records:
         """机构持股。POST /institutional-holding/list（分页）。quarter_type: 1~4。"""
         return self._call(
             "institutional_holding", fetch_all=fetch_all, max_rows=max_rows,
             page_num=page_num, page_size=page_size,
             stock_code=stock_code, report_year=report_year, quarter_type=quarter_type,
-            **extra,
         )
 
     def financial_report(
         self, *, stock_code=None, report_year=None, quarter_type=None,
         page_num=1, page_size=DEFAULT_PAGE_SIZE, fetch_all=False, max_rows=DEFAULT_MAX_ROWS,
-        **extra,
     ) -> Records:
         """财务报告。POST /financial-report/list（分页）。quarter_type: 1~4。"""
         return self._call(
             "financial_report", fetch_all=fetch_all, max_rows=max_rows,
             page_num=page_num, page_size=page_size,
             stock_code=stock_code, report_year=report_year, quarter_type=quarter_type,
-            **extra,
         )
 
     def dividend_factor(
         self, *, stock_code=None, start_date=None, end_date=None,
         page_num=1, page_size=DEFAULT_PAGE_SIZE, fetch_all=False, max_rows=DEFAULT_MAX_ROWS,
-        **extra,
     ) -> Records:
         """分红配送。POST /dividend-factor/list（分页）。"""
         return self._call(
             "dividend_factor", fetch_all=fetch_all, max_rows=max_rows,
             page_num=page_num, page_size=page_size,
             stock_code=stock_code, start_date=start_date, end_date=end_date,
-            **extra,
         )
 
     def stock_limit_up_stats(
         self, *, stock_code=None, start_date=None, end_date=None,
         page_num=1, page_size=DEFAULT_PAGE_SIZE, fetch_all=False, max_rows=DEFAULT_MAX_ROWS,
-        **extra,
     ) -> Records:
         """涨跌停统计。POST /stock-limit-up-stats/list（分页）。"""
         return self._call(
             "stock_limit_up_stats", fetch_all=fetch_all, max_rows=max_rows,
             page_num=page_num, page_size=page_size,
             stock_code=stock_code, start_date=start_date, end_date=end_date,
-            **extra,
         )
 
     def trading_calendar(
         self, *, start_date=None, end_date=None,
         page_num=1, page_size=DEFAULT_PAGE_SIZE, fetch_all=False, max_rows=DEFAULT_MAX_ROWS,
-        **extra,
     ) -> Records:
         """交易日历。POST /trading-calendar/list（分页）。"""
         return self._call(
             "trading_calendar", fetch_all=fetch_all, max_rows=max_rows,
             page_num=page_num, page_size=page_size,
             start_date=start_date, end_date=end_date,
-            **extra,
         )
 
     def stock_realtime(self, *, stock_codes=None) -> Records:
