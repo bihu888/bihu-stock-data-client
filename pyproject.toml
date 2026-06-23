@@ -1,0 +1,32 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "bihu-stock-data-client"
+version = "0.1.0"
+description = "Python 客户端 SDK，对接 stock-data-server 的 A 股数据 REST API"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "bihu" }]
+keywords = ["stock", "a-share", "finance", "data", "sdk"]
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = ["requests>=2.31"]
+
+[project.optional-dependencies]
+pandas = ["pandas>=2.0"]
+dev = ["pytest>=7", "requests-mock>=1.11", "mypy>=1.8"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/bihu_stock_data_client"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["integration: opt-in 真机集成测试（需服务端 + API Key）"]
