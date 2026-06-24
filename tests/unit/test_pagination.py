@@ -64,3 +64,62 @@ def test_iter_max_rows_guard():
         with pytest.raises(PaginationLimitError):
             for _ in client().kline_daily_iter(stock_code="000001", page_size=5, max_rows=3):
                 pass
+
+
+def test_fetch_all_single_page():
+    single = {
+        "column": ["x"], "item": [[1], [2]], "pageNum": 1, "pageSize": 2,
+        "totalCount": 2, "totalPage": 1,
+    }
+    env = {"code": "0000", "data": single, "traceId": "t"}
+    with requests_mock.Mocker() as m:
+        m.register_uri("POST", f"{BASE}/kline-daily/list", json=env)
+        rows = client().kline_daily(stock_code="000001", page_size=2, fetch_all=True)
+        assert len(rows) == 2
+        assert rows.total_pages == 1
+        assert rows.total_count == 2
+        assert [r["x"] for r in rows] == [1, 2]
+        assert m.call_count == 1  # 不会请求第二页
+
+
+def test_iter_single_page():
+    single = {
+        "column": ["x"], "item": [[1], [2]], "pageNum": 1, "pageSize": 2,
+        "totalCount": 2, "totalPage": 1,
+    }
+    env = {"code": "0000", "data": single, "traceId": "t"}
+    with requests_mock.Mocker() as m:
+        m.register_uri("POST", f"{BASE}/kline-daily/list", json=env)
+        collected = []
+        for page in client().kline_daily_iter(stock_code="000001", page_size=2):
+            collected.extend(page)
+        assert [r["x"] for r in collected] == [1, 2]
+        assert m.call_count == 1  # 单页即止，不翻第二页
+
+
+def test_fetch_all_empty_result():
+    empty = {
+        "column": ["x"], "item": [], "pageNum": 1, "pageSize": 2,
+        "totalCount": 0, "totalPage": 0,
+    }
+    env = {"code": "0000", "data": empty, "traceId": "t"}
+    with requests_mock.Mocker() as m:
+        m.register_uri("POST", f"{BASE}/kline-daily/list", json=env)
+        rows = client().kline_daily(stock_code="000001", page_size=2, fetch_all=True)
+        assert len(rows) == 0
+        assert m.call_count == 1  # 有界请求，不死循环
+
+
+def test_iter_empty_result():
+    empty = {
+        "column": ["x"], "item": [], "pageNum": 1, "pageSize": 2,
+        "totalCount": 0, "totalPage": 0,
+    }
+    env = {"code": "0000", "data": empty, "traceId": "t"}
+    with requests_mock.Mocker() as m:
+        m.register_uri("POST", f"{BASE}/kline-daily/list", json=env)
+        collected = []
+        for page in client().kline_daily_iter(stock_code="000001", page_size=2):
+            collected.extend(page)
+        assert collected == []  # 空结果不 yield，正常终止
+        assert m.call_count == 1  # 有界请求，不死循环
