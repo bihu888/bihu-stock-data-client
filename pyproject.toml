@@ -22,7 +22,7 @@ dependencies = ["requests>=2.31"]
 
 [project.optional-dependencies]
 pandas = ["pandas>=2.0"]
-dev = ["pytest>=7", "requests-mock>=1.11", "mypy>=1.8"]
+dev = ["pytest>=7", "requests-mock>=1.11", "mypy>=1.8", "types-requests>=2.31"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/bihu_stock_data_client"]
