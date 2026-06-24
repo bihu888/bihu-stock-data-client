@@ -28,7 +28,7 @@ def client():
 def test_stock_basic(client):
     rows = client.stock_basic()
     assert len(rows) > 0
-    assert "stockCode" in rows[0]
+    assert "stock_code" in rows[0]
 
 
 def test_kline_daily_single_page(client):

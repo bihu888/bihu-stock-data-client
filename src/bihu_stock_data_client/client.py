@@ -162,7 +162,7 @@ class StockDataClient:
 
         筛选: stock_code, start_date(yyyy-MM-dd), end_date(yyyy-MM-dd)，均可选。
         分页: page_num(默认1), page_size(默认1000, 上限1000); fetch_all=True 自动全量; max_rows 全量护栏。
-        返回: Records（list[dict]，键为服务端 camelCase 列名）。
+        返回: Records（list[dict]，键为服务端原始列名；本服务端为 snake_case，如 stock_code、trade_date）。
         """
         return self._call(
             "kline_daily", fetch_all=fetch_all, max_rows=max_rows,

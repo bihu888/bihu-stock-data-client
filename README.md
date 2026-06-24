@@ -20,7 +20,7 @@ client = bsdc.Client(api_key="你的 API Key")  # base_url 默认 localhost，�
 
 # 单页查询（默认最多 1000 条）
 rows = client.kline_daily(stock_code="000001", start_date="2025-01-01")
-print(rows[0])            # {'stockCode':'000001','tradeDate':'2025-01-02','close':...}
+print(rows[0])            # {'stock_code':'000001.SZ','trade_date':'2025-01-02','close':...}
 print(rows.total_count)   # 总条数
 
 # 自动全量（客户端自动翻页）

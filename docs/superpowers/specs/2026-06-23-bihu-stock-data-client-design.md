@@ -77,7 +77,7 @@
 
 ### 3.4 字段命名
 
-服务端 JSON 使用 **camelCase**：`stockCode`、`startDate`、`endDate`、`pageNum`、`pageSize`、`indexCode`、`industryCode`、`reportYear`、`quarterType`。
+服务端**请求体**字段使用 **camelCase**：`stockCode`、`startDate`、`endDate`、`pageNum`、`pageSize`、`indexCode`、`industryCode`、`reportYear`、`quarterType`；**响应列式数据的列名**为 **snake_case**（如 `stock_code`、`trade_date`、`close`），客户端原样保留为字典键、不做转换。
 
 - `quarterType` 枚举：`1`=一季报、`2`=年中报、`3`=三季报、`4`=年报。
 - 日期统一为 `yyyy-MM-dd` 字符串。
@@ -207,7 +207,7 @@ ENDPOINTS = [
 
 - 对外暴露 Python 风格 `snake_case`（`stock_code`、`start_date`、`page_num`）。
 - 发送 JSON 请求体前，键名转回 `camelCase`（`stockCode`、`startDate`、`pageNum`）。
-- 解码列式数据时，**保留服务端原始 `camelCase` 列名**作为字典键（与服务端字段一致，避免双向映射歧义；用户取值 `row["close"]`、`row["stockCode"]`）。
+- 解码列式数据时，**保留服务端原始列名**作为字典键（本服务端列名为 `snake_case`，如 `stock_code`、`trade_date`；与服务端字段一致，避免双向映射歧义；用户取值 `row["close"]`、`row["stock_code"]`）。
 
 ### 6.4 数据流（一次调用）
 
@@ -430,7 +430,7 @@ StockDataError                        # 基类；均携带 .trace_id（服务端
 | 同步模型 | 同步（`requests`） | 简单易用 |
 | API 风格 | 扁平显式方法 + 声明式注册表 | 自动补全 + docstring 最强；实现 DRY 易维护 |
 | 分页 | 默认首页 + 手动翻页 + `fetch_all` + 迭代器 + `max_rows` 护栏 | 零成本起步，复杂度由客户端承担，且有防呆 |
-| 列字典键 | 保留服务端 camelCase 原始列名 | 与服务端字段一致，避免双向映射歧义 |
+| 列字典键 | 保留服务端 snake_case 原始列名 | 与服务端字段一致，避免双向映射歧义 |
 | Python 版本 | 3.10+ | 3.9 已 EOL |
 | 协议 | MIT | 宽松、流行 |
 
