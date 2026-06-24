@@ -1,6 +1,6 @@
 # bihu-stock-data-client
 
-Python 客户端 SDK，对接 [stock-data-server](../stock-data-server) 的 A 股数据 REST API。
+Python 客户端 SDK，对接 stock-data-server 的 A 股数据 REST API。
 专为人类用户与 AI 设计：显式方法名、完整类型注解、内置分页自动化。
 
 ## 安装
@@ -37,6 +37,8 @@ df = rows.to_pandas()
 | `api_key` | API Key（经请求头 `X-API-Key` 透传） | `BIHU_STOCK_DATA_API_KEY` |
 | `base_url` | 服务端地址，默认 `http://localhost:9800/stock/data` | `BIHU_STOCK_DATA_BASE_URL` |
 
+> 注意：`StockDataClient` 实例非线程安全；多线程请每线程使用独立实例，或通过 `session=` 注入自定义 `requests.Session`。
+
 ## 支持的接口（26 个）
 
 K线行情：`kline_daily`、`kline_daily_stat`、`kline_minute`、`kline_minute_snapshot`
@@ -57,8 +59,7 @@ K线行情：`kline_daily`、`kline_daily_stat`、`kline_minute`、`kline_minute
 
 ## 错误处理
 
-所有异常继承 `bsdc.StockDataError`：`AuthenticationError`（401）、`RateLimitError`（限流）、
-`ApiError`（业务错误，带 `code`/`trace_id`）、`PaginationLimitError`、`ConnectionError`、`ValidationError`。
+所有异常继承 `bsdc.StockDataError`：`ConfigurationError`（未配置 API Key）、`AuthenticationError`（401）、`RateLimitError`（限流）、`ApiError`（业务错误，带 `code`/`trace_id`）、`PaginationLimitError`、`ConnectionError`、`ValidationError`。
 
 ## License
 

@@ -66,3 +66,12 @@ def test_connection_error_wrapped():
         m.post(f"{BASE}/kline-daily/list", exc=requests.exceptions.ConnectionError)
         with pytest.raises(ConnectionError):
             make_client().request("POST", "/kline-daily/list", json={})
+
+
+def test_500_raises_api_error_with_status():
+    with requests_mock.Mocker() as m:
+        m.get(f"{BASE}/stock-basic/list", status_code=500,
+              json={"code": "9999", "message": "服务异常", "traceId": "t"})
+        with pytest.raises(ApiError) as ei:
+            make_client().request("GET", "/stock-basic/list")
+        assert ei.value.status == 500

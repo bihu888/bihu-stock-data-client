@@ -68,5 +68,6 @@ def test_to_pandas_requires_pandas(monkeypatch):
 
     monkeypatch.setattr(builtins, "__import__", fake_import)
     r = Records([{"a": 1}])
-    with pytest.raises(ImportError):
+    with pytest.raises(ImportError) as ei:
         r.to_pandas()
+    assert "pandas" in str(ei.value)

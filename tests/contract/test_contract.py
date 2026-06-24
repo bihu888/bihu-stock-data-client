@@ -99,6 +99,40 @@ def test_contract_get_list_all_no_pagination():
         assert m.last_request.method == "GET"
 
 
+def test_contract_get_list_all_index_basic_no_pagination():
+    """GET 全量（不分页）：index_basic，返回 ColumnarData 无分页字段。"""
+    with requests_mock.Mocker() as m:
+        m.get(
+            f"{BASE}/index-basic/list",
+            json=_envelope({
+                "column": ["indexCode", "indexName"],
+                "item": [["000300", "沪深300"], ["000905", "中证500"]],
+            }),
+        )
+        rows = client().index_basic()
+        assert len(rows) == 2
+        assert rows[0]["indexName"] == "沪深300"
+        assert rows.total_count is None
+        assert m.last_request.method == "GET"
+
+
+def test_contract_get_list_all_sw_industry_no_pagination():
+    """GET 全量（不分页）：sw_industry，返回 ColumnarData 无分页字段。"""
+    with requests_mock.Mocker() as m:
+        m.get(
+            f"{BASE}/sw-industry/list",
+            json=_envelope({
+                "column": ["industryCode", "industryName"],
+                "item": [["801010", "农林牧渔"], ["801020", "采掘"]],
+            }),
+        )
+        rows = client().sw_industry()
+        assert len(rows) == 2
+        assert rows[0]["industryName"] == "农林牧渔"
+        assert rows.total_count is None
+        assert m.last_request.method == "GET"
+
+
 def test_contract_get_path_param():
     """GET 路径参数：kline_minute。"""
     with requests_mock.Mocker() as m:
