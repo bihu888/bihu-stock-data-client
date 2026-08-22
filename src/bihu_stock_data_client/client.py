@@ -1,4 +1,4 @@
-"""StockDataClient：门面，组合 transport + registry + decoder，暴露 26 个查询方法。"""
+"""StockDataClient：门面，组合 transport + registry + decoder，暴露 28 个查询方法。"""
 
 from __future__ import annotations
 
@@ -89,7 +89,10 @@ class StockDataClient:
             if biz.get(p) is not None:
                 body[snake_to_camel(p)] = biz[p]
         if ep.method is HttpMethod.GET:
-            data = self._http.request("GET", self._build_path(ep, biz))
+            query = {
+                snake_to_camel(p): biz[p] for p in ep.params if biz.get(p) is not None
+            }
+            data = self._http.request("GET", self._build_path(ep, biz), params=query or None)
         else:
             data = self._http.request("POST", ep.path, json=body)
         if ep.paginated:
@@ -153,7 +156,7 @@ class StockDataClient:
                 break
             page_num += 1
 
-    # ---------------- 公开 API：26 个方法 ----------------
+    # ---------------- 公开 API：28 个方法 ----------------
     def kline_daily(
         self, *, stock_code=None, start_date=None, end_date=None,
         page_num=1, page_size=DEFAULT_PAGE_SIZE, fetch_all=False, max_rows=DEFAULT_MAX_ROWS,
@@ -184,16 +187,6 @@ class StockDataClient:
     def kline_minute(self, *, stock_code, trade_date) -> Records:
         """按股票+日期查分钟K线。GET /kline-minute/{stock_code}/{trade_date}（不分页）。"""
         return self._call("kline_minute", stock_code=stock_code, trade_date=trade_date)
-
-    def kline_minute_snapshot(
-        self, *, stock_code=None,
-        page_num=1, page_size=DEFAULT_PAGE_SIZE, fetch_all=False, max_rows=DEFAULT_MAX_ROWS,
-    ) -> Records:
-        """分钟K线快照。POST /kline-minute-snapshot/list（分页）。"""
-        return self._call(
-            "kline_minute_snapshot", fetch_all=fetch_all, max_rows=max_rows,
-            page_num=page_num, page_size=page_size, stock_code=stock_code,
-        )
 
     def index_basic(self) -> Records:
         """所有指数基础信息。GET /index-basic/list（不分页）。"""
@@ -270,6 +263,17 @@ class StockDataClient:
             "capital_flow", fetch_all=fetch_all, max_rows=max_rows,
             page_num=page_num, page_size=page_size,
             stock_code=stock_code, start_date=start_date, end_date=end_date,
+        )
+
+    def chip_distribution(
+        self, *, stock_code, min_price=None, max_price=None,
+        page_num=1, page_size=DEFAULT_PAGE_SIZE, fetch_all=False, max_rows=DEFAULT_MAX_ROWS,
+    ) -> Records:
+        """筹码分布（单股最新快照：各价格档累计成交量）。POST /chip-distribution/list（分页）。"""
+        return self._call(
+            "chip_distribution", fetch_all=fetch_all, max_rows=max_rows,
+            page_num=page_num, page_size=page_size,
+            stock_code=stock_code, min_price=min_price, max_price=max_price,
         )
 
     def block_trade(
@@ -404,9 +408,32 @@ class StockDataClient:
             start_date=start_date, end_date=end_date,
         )
 
-    def stock_realtime(self, *, stock_codes=None) -> Records:
-        """股票实时快照（内存，不分页）。POST /stock-realtime/list。stock_codes 为空返回全部。"""
-        return self._call("stock_realtime", stock_codes=stock_codes)
+    # ---------------- 实时行情（/market，GET 路径参数，不分页）----------------
+    def market_quote(self, *, stock_code) -> Records:
+        """实时五档行情快照。GET /market/quote/{stock_code}（不分页）。
+
+        返回单行 Records（无数据时为空），键为服务端原始列名（snake_case）：
+        stock_code、trade_date、trade_time、last_price、open、high、low、last_close、
+        amount、volume，以及五档 ask_price1-5 / bid_price1-5 / ask_vol1-5 / bid_vol1-5。
+        """
+        return self._call("market_quote", stock_code=stock_code)
+
+    def market_kline_minute(self, *, stock_code) -> Records:
+        """当日分钟K线（1分钟 OHLC）。GET /market/kline-minute/{stock_code}（不分页）。
+
+        返回当日逐分钟 Records，键为服务端原始列名（snake_case）：
+        stock_code、trade_date、trade_time、open、high、low、close、volume、amount。
+        """
+        return self._call("market_kline_minute", stock_code=stock_code)
+
+    def market_transaction(self, *, stock_code, max_count=None) -> Records:
+        """当日分笔成交（Tick）。GET /market/transaction/{stock_code}?max_count=N（服务端自动分页，不分页）。
+
+        max_count 为返回条数上限（服务端默认 8000，上限 50000），None 则用服务端默认。
+        返回逐笔 Records，键为服务端原始列名（snake_case）：
+        stock_code、trade_date、trade_time、price、volume、num、direction（0=买 1=卖 2=中性）。
+        """
+        return self._call("market_transaction", stock_code=stock_code, max_count=max_count)
 
     # ---------------- 流式迭代（仅分页接口）----------------
     def kline_daily_iter(self, *, stock_code=None, start_date=None, end_date=None,
@@ -420,12 +447,6 @@ class StockDataClient:
         """每日统计指标，逐页 yield。"""
         yield from self._iter_pages("kline_daily_stat", max_rows=max_rows, page_size=page_size,
                                     stock_code=stock_code, start_date=start_date, end_date=end_date)
-
-    def kline_minute_snapshot_iter(self, *, stock_code=None,
-                                   page_size=DEFAULT_PAGE_SIZE, max_rows=DEFAULT_MAX_ROWS) -> Iterator[Records]:
-        """分钟K线快照，逐页 yield。"""
-        yield from self._iter_pages("kline_minute_snapshot", max_rows=max_rows,
-                                    page_size=page_size, stock_code=stock_code)
 
     def index_kline_daily_iter(self, *, index_code=None, start_date=None, end_date=None,
                                page_size=DEFAULT_PAGE_SIZE, max_rows=DEFAULT_MAX_ROWS) -> Iterator[Records]:
@@ -462,6 +483,12 @@ class StockDataClient:
         """资金流向，逐页 yield。"""
         yield from self._iter_pages("capital_flow", max_rows=max_rows, page_size=page_size,
                                     stock_code=stock_code, start_date=start_date, end_date=end_date)
+
+    def chip_distribution_iter(self, *, stock_code, min_price=None, max_price=None,
+                               page_size=DEFAULT_PAGE_SIZE, max_rows=DEFAULT_MAX_ROWS) -> Iterator[Records]:
+        """筹码分布，逐页 yield。"""
+        yield from self._iter_pages("chip_distribution", max_rows=max_rows, page_size=page_size,
+                                    stock_code=stock_code, min_price=min_price, max_price=max_price)
 
     def block_trade_iter(self, *, stock_code=None, start_date=None, end_date=None,
                          page_size=DEFAULT_PAGE_SIZE, max_rows=DEFAULT_MAX_ROWS) -> Iterator[Records]:

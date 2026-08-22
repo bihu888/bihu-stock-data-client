@@ -46,13 +46,15 @@ class HttpClient:
         path: str,
         *,
         json: Optional[Mapping[str, Any]] = None,
+        params: Optional[Mapping[str, Any]] = None,
     ) -> Any:
         url = self._config.base_url + path
         headers = {"X-API-Key": self._config.api_key}
         logger.debug("%s %s", method, path)
         try:
             resp = self._session.request(
-                method, url, json=json, headers=headers, timeout=self._config.timeout
+                method, url, json=json, params=params, headers=headers,
+                timeout=self._config.timeout,
             )
         except requests.exceptions.Timeout as e:
             raise ConnectionError(f"请求超时: {e}") from e

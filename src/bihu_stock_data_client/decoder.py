@@ -18,7 +18,7 @@ def _row_to_dict(columns: list, row: list) -> dict:
 class Records(list):
     """list[dict] 子类：手感同 list[dict]，附带分页元信息与可选 pandas 转换。
 
-    字典键保留服务端原始 camelCase 列名（如 'stockCode'、'close'）。
+    字典键保留服务端原始列名（本服务端为 snake_case，如 'stock_code'、'close'）。
     """
 
     def __init__(

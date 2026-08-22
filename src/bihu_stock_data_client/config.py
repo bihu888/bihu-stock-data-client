@@ -6,6 +6,8 @@ import os
 from dataclasses import dataclass
 from typing import Optional
 
+from dotenv import find_dotenv, load_dotenv
+
 from .errors import ConfigurationError
 
 ENV_API_KEY = "BIHU_STOCK_DATA_API_KEY"
@@ -31,6 +33,7 @@ class ClientConfig:
         timeout: float = DEFAULT_TIMEOUT,
         max_retries: int = DEFAULT_MAX_RETRIES,
     ) -> "ClientConfig":
+        load_dotenv(find_dotenv(usecwd=True))  # 从 cwd 向上查找 .env；已存在的环境变量优先级更高
         key = api_key if api_key is not None else os.environ.get(ENV_API_KEY)
         if not key:
             raise ConfigurationError(

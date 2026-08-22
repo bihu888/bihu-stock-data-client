@@ -16,7 +16,7 @@ from .errors import (
     ValidationError,
 )
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 # 设计文档使用 bsdc.Client(...) 形式
 Client = StockDataClient

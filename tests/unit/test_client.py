@@ -61,17 +61,59 @@ def test_get_path_param():
         assert "kline-minute/000001/2025-06-20" in m.last_request.path
 
 
-def test_stock_realtime_post_body():
+def test_market_quote_get_path():
     with requests_mock.Mocker() as m:
-        m.post(
-            f"{BASE}/stock-realtime/list",
+        m.get(
+            f"{BASE}/market/quote/000001",
             json={"code": "0000",
-                  "data": {"column": ["stockCode"], "item": [["000001"]]}, "traceId": "t"},
+                  "data": {"column": ["stock_code", "last_price"],
+                           "item": [["000001.SZ", 10.5]]},
+                  "traceId": "t"},
         )
-        client().stock_realtime(stock_codes=["000001", "600000"])
-        body = m.last_request.json()
-        assert body["stockCodes"] == ["000001", "600000"]
-        assert "pageNum" not in body  # 非分页不带分页字段
+        rows = client().market_quote(stock_code="000001")
+        assert rows[0]["last_price"] == 10.5
+        assert rows.total_count is None  # 非分页
+        assert m.last_request.method == "GET"
+        assert "/market/quote/000001" in m.last_request.path
+
+
+def test_market_kline_minute_get_path():
+    with requests_mock.Mocker() as m:
+        m.get(
+            f"{BASE}/market/kline-minute/000001",
+            json={"code": "0000",
+                  "data": {"column": ["trade_time", "close"], "item": [["093100", 10.5]]},
+                  "traceId": "t"},
+        )
+        rows = client().market_kline_minute(stock_code="000001")
+        assert rows[0]["close"] == 10.5
+        assert m.last_request.method == "GET"
+
+
+def test_market_transaction_query_param_camelcase():
+    with requests_mock.Mocker() as m:
+        m.get(
+            f"{BASE}/market/transaction/000001",
+            json={"code": "0000",
+                  "data": {"column": ["price", "volume"], "item": [[10.5, 100]]},
+                  "traceId": "t"},
+        )
+        client().market_transaction(stock_code="000001", max_count=5000)
+        assert m.last_request.method == "GET"
+        # 查询参数走 camelCase，与服务端 @RequestParam maxCount 对齐
+        assert "maxCount=5000" in m.last_request.url
+        assert m.last_request.qs["maxcount"] == ["5000"]
+
+
+def test_market_transaction_default_no_query():
+    with requests_mock.Mocker() as m:
+        m.get(
+            f"{BASE}/market/transaction/000001",
+            json={"code": "0000",
+                  "data": {"column": ["price"], "item": [[10.5]]}, "traceId": "t"},
+        )
+        client().market_transaction(stock_code="000001")
+        assert m.last_request.qs == {}  # max_count 缺省时不带查询参数
 
 
 def test_unknown_param_rejected():

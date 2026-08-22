@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "bihu-stock-data-client"
-version = "0.1.0"
+version = "0.2.0"
 description = "Python 客户端 SDK，对接 stock-data-server 的 A 股数据 REST API"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -18,7 +18,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
 ]
-dependencies = ["requests>=2.31"]
+dependencies = ["requests>=2.31", "python-dotenv>=1.0"]
 
 [project.optional-dependencies]
 pandas = ["pandas>=2.0"]

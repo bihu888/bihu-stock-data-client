@@ -37,8 +37,6 @@ ENDPOINTS: tuple[Endpoint, ...] = (
              params=("stock_code", "start_date", "end_date"), paginated=True, summary="每日统计指标"),
     Endpoint("kline_minute", HttpMethod.GET, "/kline-minute/{stock_code}/{trade_date}",
              path_params=("stock_code", "trade_date"), summary="按股票+日期查分钟K线"),
-    Endpoint("kline_minute_snapshot", HttpMethod.POST, "/kline-minute-snapshot/list",
-             params=("stock_code",), paginated=True, summary="分钟K线快照"),
     # 指数
     Endpoint("index_basic", HttpMethod.GET, "/index-basic/list", summary="所有指数基础信息"),
     Endpoint("index_kline_daily", HttpMethod.POST, "/index-kline-daily/list",
@@ -66,6 +64,9 @@ ENDPOINTS: tuple[Endpoint, ...] = (
              params=("stock_code", "start_date", "end_date"), paginated=True, summary="龙虎榜"),
     Endpoint("pre_post_market", HttpMethod.POST, "/pre-post-market/list",
              params=("stock_code", "start_date", "end_date"), paginated=True, summary="盘前盘后成交"),
+    # 筹码
+    Endpoint("chip_distribution", HttpMethod.POST, "/chip-distribution/list",
+             params=("stock_code", "min_price", "max_price"), paginated=True, summary="筹码分布"),
     # 股本/股东
     Endpoint("share_capital", HttpMethod.POST, "/share-capital/list",
              params=("stock_code", "start_date", "end_date"), paginated=True, summary="股本数据"),
@@ -86,7 +87,11 @@ ENDPOINTS: tuple[Endpoint, ...] = (
     # 交易日历
     Endpoint("trading_calendar", HttpMethod.POST, "/trading-calendar/list",
              params=("start_date", "end_date"), paginated=True, summary="交易日历"),
-    # 实时快照（内存查询，不分页）
-    Endpoint("stock_realtime", HttpMethod.POST, "/stock-realtime/list",
-             params=("stock_codes",), summary="股票实时快照（内存，不分页）"),
+    # 实时行情（/market，转发 Python mootdx 服务；GET 路径参数，不分页）
+    Endpoint("market_quote", HttpMethod.GET, "/market/quote/{stock_code}",
+             path_params=("stock_code",), summary="实时五档行情快照"),
+    Endpoint("market_kline_minute", HttpMethod.GET, "/market/kline-minute/{stock_code}",
+             path_params=("stock_code",), summary="当日分钟K线"),
+    Endpoint("market_transaction", HttpMethod.GET, "/market/transaction/{stock_code}",
+             params=("max_count",), path_params=("stock_code",), summary="当日分笔成交"),
 )

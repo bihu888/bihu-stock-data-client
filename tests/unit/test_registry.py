@@ -9,7 +9,7 @@ def test_unique_names():
 
 
 def test_count():
-    assert len(ENDPOINTS) == 26
+    assert len(ENDPOINTS) == 28
 
 
 def test_required_fields():
@@ -25,7 +25,9 @@ def test_paginated_marked():
     assert by_name["kline_daily"].paginated is True
     assert by_name["stock_basic"].paginated is False
     assert by_name["kline_minute"].paginated is False
-    assert by_name["stock_realtime"].paginated is False
+    assert by_name["market_quote"].paginated is False
+    assert by_name["market_kline_minute"].paginated is False
+    assert by_name["market_transaction"].paginated is False
 
 
 def test_known_params():
@@ -37,4 +39,6 @@ def test_known_params():
         "quarter_type",
     )
     assert by_name["kline_minute"].path_params == ("stock_code", "trade_date")
-    assert by_name["stock_realtime"].params == ("stock_codes",)
+    assert by_name["market_quote"].path_params == ("stock_code",)
+    assert by_name["market_transaction"].params == ("max_count",)
+    assert by_name["market_transaction"].path_params == ("stock_code",)

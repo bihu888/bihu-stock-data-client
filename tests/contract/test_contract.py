@@ -155,18 +155,79 @@ def test_contract_get_path_param():
         assert rows[0]["trade_time"] == 93000
 
 
-def test_contract_stock_realtime_memory_query():
-    """POST 内存查询（不分页）：stock_realtime（请求 stockCodes 数组）。"""
+def test_contract_market_quote_get_columnar():
+    """GET 路径参数 + 列式：market_quote（实时五档行情，单行）。"""
     with requests_mock.Mocker() as m:
-        m.post(
-            f"{BASE}/stock-realtime/list",
+        m.get(
+            f"{BASE}/market/quote/000001",
             json=_envelope({
-                "column": ["stock_code", "last_price"],
-                "item": [["000001.SZ", 10.5], ["600000.SH", 9.8]],
+                "column": ["stock_code", "trade_time", "last_price", "ask_price1", "bid_price1"],
+                "item": [["000001.SZ", "093100", 10.5, 10.51, 10.49]],
             }),
         )
-        rows = client().stock_realtime(stock_codes=["000001", "600000"])
+        rows = client().market_quote(stock_code="000001")
+        assert rows[0]["last_price"] == 10.5
+        assert rows[0]["ask_price1"] == 10.51
+        assert rows.total_count is None  # ColumnarData 无分页字段
+        assert m.last_request.method == "GET"
+
+
+def test_contract_market_kline_minute_get_columnar():
+    """GET 路径参数 + 列式：market_kline_minute（当日分钟K线，多行）。"""
+    with requests_mock.Mocker() as m:
+        m.get(
+            f"{BASE}/market/kline-minute/000001",
+            json=_envelope({
+                "column": ["stock_code", "trade_time", "open", "close", "volume", "amount"],
+                "item": [
+                    ["000001.SZ", "093100", 10.0, 10.1, 1000, 10100.0],
+                    ["000001.SZ", "093200", 10.1, 10.2, 1500, 15300.0],
+                ],
+            }),
+        )
+        rows = client().market_kline_minute(stock_code="000001")
+        assert len(rows) == 2
+        assert rows[1]["close"] == 10.2
+        assert m.last_request.method == "GET"
+
+
+def test_contract_market_transaction_query_param():
+    """GET 路径参数 + 查询参数（camelCase）+ 列式：market_transaction（当日分笔成交）。"""
+    with requests_mock.Mocker() as m:
+        m.get(
+            f"{BASE}/market/transaction/000001",
+            json=_envelope({
+                "column": ["stock_code", "trade_time", "price", "volume", "num", "direction"],
+                "item": [["000001.SZ", "093015", 10.5, 100, 1, 0]],
+            }),
+        )
+        rows = client().market_transaction(stock_code="000001", max_count=8000)
+        assert rows[0]["direction"] == 0
+        assert m.last_request.method == "GET"
+        assert "maxCount=8000" in m.last_request.url
+
+
+def test_contract_chip_distribution():
+    """筹码分布分页：chip_distribution（单股价格-成交量分布快照）。"""
+    with requests_mock.Mocker() as m:
+        m.post(
+            f"{BASE}/chip-distribution/list",
+            json=_envelope({
+                "column": ["stock_code", "price", "volume", "last_date"],
+                "item": [
+                    ["600519.SH", "1308.0000", "7583960.78", "2026-08-13"],
+                    ["600519.SH", "1308.0100", "10234.00", "2026-08-13"],
+                ],
+                "pageNum": 1, "pageSize": 50, "totalCount": 2, "totalPage": 1,
+            }),
+        )
+        rows = client().chip_distribution(stock_code="600519.SH", min_price="1300", max_price="1320")
+        assert rows[0]["price"] == "1308.0000"
+        assert rows[0]["volume"] == "7583960.78"
+        assert rows[0]["last_date"] == "2026-08-13"
+        assert rows.total_count == 2
         body = m.last_request.json()
-        assert body["stockCodes"] == ["000001", "600000"]
-        assert "pageNum" not in body
-        assert rows.total_count is None
+        assert body["stockCode"] == "600519.SH"
+        assert body["minPrice"] == "1300"
+        assert body["maxPrice"] == "1320"
+        assert set(body.keys()) >= {"stockCode", "pageNum", "pageSize"}
