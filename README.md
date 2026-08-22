@@ -3,7 +3,7 @@
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-[壁虎量化](https://stock.bihu.cn) A 股数据服务的官方 Python SDK：28 个数据查询接口，显式方法名、完整类型注解、内置分页自动化，同为人类用户与 AI 助手设计。
+[壁虎量化](https://stock.bihu888.cn) A 股数据服务的官方 Python SDK：28 个数据查询接口，显式方法名、完整类型注解、内置分页自动化，同为人类用户与 AI 助手设计。
 
 ## 特性
 
@@ -19,18 +19,19 @@
 要求 Python ≥ 3.10。
 
 ```bash
-pip install "bihu-stock-data-client @ git+https://github.com/<ORG>/bihu-stock-data-client.git"
+pip install "bihu-stock-data-client @ git+https://github.com/bihu888/bihu-stock-data-client.git"
 
 # 启用 pandas 转换（可选）
-pip install "bihu-stock-data-client[pandas] @ git+https://github.com/<ORG>/bihu-stock-data-client.git"
-```
+pip install "bihu-stock-data-client[pandas] @ git+https://github.com/bihu888/bihu-stock-data-client.git"
 
-> 将 `<ORG>` 替换为实际的 GitHub 组织/用户名。
+# 国内网络可用 Gitee 镜像
+pip install "bihu-stock-data-client @ git+https://gitee.com/bihu888/bihu-stock-data-client.git"
+```
 
 ### 从源码安装
 
 ```bash
-git clone https://github.com/<ORG>/bihu-stock-data-client.git
+git clone https://github.com/bihu888/bihu-stock-data-client.git
 cd bihu-stock-data-client
 pip install -e ".[dev]"   # dev = pytest / requests-mock / mypy 等开发依赖
 ```
@@ -40,7 +41,7 @@ pip install -e ".[dev]"   # dev = pytest / requests-mock / mypy 等开发依赖
 ```python
 import bihu_stock_data_client as bsdc
 
-client = bsdc.Client(api_key="你的 API Key")  # base_url 默认本地服务，可显式传入
+client = bsdc.Client(api_key="你的 API Key")  # base_url 默认线上服务，本地联调可显式传入
 
 # 单页查询（默认第 1 页、每页最多 1000 条）
 rows = client.kline_daily(stock_code="000001.SZ", start_date="2025-01-01")
@@ -59,11 +60,11 @@ df = rows.to_pandas()
 | 参数 | 说明 | 环境变量 | 默认值 |
 |---|---|---|---|
 | `api_key` | API Key，经请求头 `X-API-Key` 透传 | `BIHU_STOCK_DATA_API_KEY` | 无（必填） |
-| `base_url` | 服务端地址 | `BIHU_STOCK_DATA_BASE_URL` | `http://localhost:9800/stock/data` |
+| `base_url` | 服务端地址 | `BIHU_STOCK_DATA_BASE_URL` | `https://stock.bihu888.cn/stock/data` |
 | `timeout` | 单次请求超时（秒） | — | `30` |
 | `max_retries` | 429/5xx 自动重试次数 | — | `2` |
 
-API Key 与服务地址由服务提供方分配，请前往 [壁虎量化](https://stock.bihu.cn) 获取。
+API Key 与服务地址由服务提供方分配，请前往 [壁虎量化](https://stock.bihu888.cn) 获取。
 
 以上环境变量也可写入项目根目录的 `.env` 文件，客户端构造时自动加载（依赖 `python-dotenv`）；**已存在的环境变量优先级更高**。可参考仓库内的 [`.env.example`](.env.example)。
 

@@ -20,6 +20,12 @@ classifiers = [
 ]
 dependencies = ["requests>=2.31", "python-dotenv>=1.0"]
 
+[project.urls]
+Homepage = "https://stock.bihu888.cn"
+Repository = "https://github.com/bihu888/bihu-stock-data-client"
+Mirror = "https://gitee.com/bihu888/bihu-stock-data-client"
+Changelog = "https://github.com/bihu888/bihu-stock-data-client/blob/master/CHANGELOG.md"
+
 [project.optional-dependencies]
 pandas = ["pandas>=2.0"]
 dev = ["pytest>=7", "requests-mock>=1.11", "mypy>=1.8", "types-requests>=2.31"]

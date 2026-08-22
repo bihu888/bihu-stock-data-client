@@ -11,6 +11,7 @@
 - `HttpClient.request` 新增 `params` 关键字参数；`_call_page` 对 GET 请求将 `Endpoint.params` 以 camelCase 查询参数发出（与 POST 请求体键的 case 约定一致）。
 - 接口总数 26 → 28。
 - 新增 `.env` 支持：构造时经 `load_dotenv(find_dotenv(usecwd=True))` 从当前目录向上查找，已有环境变量优先；依赖新增 `python-dotenv`。
+- **默认 `base_url` 切换为线上服务** `https://stock.bihu888.cn/stock/data`（原默认本地 `http://localhost:9800/stock/data`，本地联调请显式传入或设环境变量）。
 
 ## 0.1.0
 

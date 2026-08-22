@@ -60,7 +60,7 @@ python -m pytest tests/integration
 - 传输层用 `requests.Session` + urllib3 `Retry`（对 429/5xx 退避重试，`backoff_factor=0.5`），鉴权经 `X-API-Key` 请求头。
 
 ### 配置（config.py）
-`ClientConfig.from_env()` 是唯一构造入口（`StockDataClient.__init__` 也走它）。优先级：**显式参数 > 已有环境变量 > `.env`**。环境变量：`BIHU_STOCK_DATA_API_KEY`、`BIHU_STOCK_DATA_BASE_URL`（默认 `http://localhost:9800/stock/data`，即本地 Java 服务的 context-path）。
+`ClientConfig.from_env()` 是唯一构造入口（`StockDataClient.__init__` 也走它）。优先级：**显式参数 > 已有环境变量 > `.env`**。环境变量：`BIHU_STOCK_DATA_API_KEY`、`BIHU_STOCK_DATA_BASE_URL`（默认 `https://stock.bihu888.cn/stock/data`，即线上服务，nginx 反代保留 Java 的 context-path；本地联调显式传 `http://localhost:9800/stock/data`）。
 `.env` 由 `load_dotenv(find_dotenv(usecwd=True))` 在构造时从**当前工作目录**向上查找——库不能用默认的 `load_dotenv()`（其 `find_dotenv()` 默认 `usecwd=False`，会从库源码目录查找，永远找不到用户的 `.env`）。
 
 ## 测试约定

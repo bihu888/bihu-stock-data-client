@@ -12,7 +12,7 @@ from .errors import ConfigurationError
 
 ENV_API_KEY = "BIHU_STOCK_DATA_API_KEY"
 ENV_BASE_URL = "BIHU_STOCK_DATA_BASE_URL"
-DEFAULT_BASE_URL = "http://localhost:9800/stock/data"
+DEFAULT_BASE_URL = "https://stock.bihu888.cn/stock/data"
 DEFAULT_TIMEOUT = 30.0
 DEFAULT_MAX_RETRIES = 2
 
