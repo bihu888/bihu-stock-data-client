@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.0
+
+- 首次发布到 PyPI（`pip install bihu-stock-data-client`），此前仅支持 `git+https` 安装。
+- 打包元数据优化：license 改用 SPDX 标识、扩充 keywords（quant/mcp/china-stock 等）以提升 PyPI 检索命中。
+
 ## 0.2.0
 
 - **破坏性变更**：跟随 stock-data-server 更新，替换两个旧接口并新增一个（均位于服务端 `/market` 控制器）：

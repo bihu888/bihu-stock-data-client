@@ -16,16 +16,16 @@
 
 ## 安装
 
-要求 Python ≥ 3.10。
+要求 Python ≥ 3.10。已发布到 [PyPI](https://pypi.org/project/bihu-stock-data-client/)。
 
 ```bash
-pip install "bihu-stock-data-client @ git+https://github.com/bihu888/bihu-stock-data-client.git"
+pip install bihu-stock-data-client
 
 # 启用 pandas 转换（可选）
-pip install "bihu-stock-data-client[pandas] @ git+https://github.com/bihu888/bihu-stock-data-client.git"
+pip install "bihu-stock-data-client[pandas]"
 
-# 国内网络可用 Gitee 镜像
-pip install "bihu-stock-data-client @ git+https://gitee.com/bihu888/bihu-stock-data-client.git"
+# 国内网络：清华 PyPI 镜像（已自动同步）
+pip install bihu-stock-data-client -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
 ### 从源码安装

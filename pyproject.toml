@@ -4,13 +4,13 @@ build-backend = "hatchling.build"
 
 [project]
 name = "bihu-stock-data-client"
-version = "0.2.0"
+version = "0.3.0"
 description = "Python 客户端 SDK，对接 stock-data-server 的 A 股数据 REST API"
 readme = "README.md"
 requires-python = ">=3.10"
-license = { text = "MIT" }
+license = "MIT"
 authors = [{ name = "bihu" }]
-keywords = ["stock", "a-share", "finance", "data", "sdk"]
+keywords = ["stock", "a-share", "china-stock", "finance", "data", "api", "sdk", "quant", "mcp", "lhb"]
 classifiers = [
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
